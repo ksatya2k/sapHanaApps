@@ -38,8 +38,10 @@ app.use(helmet.contentSecurityPolicy({
 	}
 }));
 // Sets "Referrer-Policy: no-referrer".
-app.use(helmet.referrerPolicy({ policy: "no-referrer" }));
-console.log("my custom text Satya ");
+app.use(helmet.referrerPolicy({
+	policy: "no-referrer"
+}));
+console.log("my custom text Satya .. Check with our build ");
 /*
 try{
 console.log(xsenv.getServices({ 
@@ -73,12 +75,11 @@ try {
 		}
 	});
 	hanaOptions.hana.pooling = true;
-	
+
 	console.log(`HANA Options: ${JSON.stringify(hanaOptions)}`);
 } catch (error) {
 	console.log(`Error: ${error.toString()}`);
 }
-
 
 app.use(
 	passport.authenticate("JWT", {
@@ -101,7 +102,7 @@ cds.connect(options);
 
 var odataURL = "/odata/v4/opensap.hana.CatalogService/";
 // Main app
-cds.serve("all", {
+cds.serve("gen/csn.json", {
 		crashOnError: false
 	})
 	.at(odataURL)
@@ -109,6 +110,7 @@ cds.serve("all", {
 	.in(app)
 	.catch((err) => {
 		console.log(err);
+		console.log("not able to find cds views");
 		process.exit(1);
 	});
 
@@ -122,7 +124,6 @@ app.get("/node", (req, res) => {
 
 //Setup Additonal Node.js Routes
 require("./router")(app, server);
-
 
 //Start the Server 
 server.on("request", app);
