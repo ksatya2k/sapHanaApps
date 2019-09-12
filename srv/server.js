@@ -1,13 +1,12 @@
-/* eslint no-console: 0, no-unused-vars: 0, no-undef:0, no-process-exit:0 */
-/* eslint-env node, es6 */
+/*eslint no-console: 0, no-unused-vars: 0, no-undef:0, no-process-exit:0*/
+/*eslint-env node, es6 */
 "use strict";
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3100;
 const server = require("http").createServer();
 
 const cds = require("@sap/cds");
 //Initialize Express App for XSA UAA and HDBEXT Middleware
 const xsenv = require("@sap/xsenv");
-//xsenv.loadEnv();
 const passport = require("passport");
 const xssec = require("@sap/xssec");
 const xsHDBConn = require("@sap/hdbext");
@@ -41,51 +40,28 @@ app.use(helmet.contentSecurityPolicy({
 app.use(helmet.referrerPolicy({
 	policy: "no-referrer"
 }));
-console.log("my custom text Satya .. Check with our build ");
-/*
-try{
-console.log(xsenv.getServices({ 
-	uaa: {
-		tag: "xsuaa"
-	}
-}).uaa);
-
-} catch (error) {
-	console.log(`Error: ${error.toString()}`);
-}
-*/
 
 passport.use("JWT", new xssec.JWTStrategy(xsenv.getServices({
 	uaa: {
 		tag: "xsuaa"
 	}
 }).uaa));
-
 app.use(logging.middleware({
 	appContext: appContext,
 	logNetwork: true
 }));
-
 app.use(passport.initialize());
-
-try {
-	var hanaOptions = xsenv.getServices({
-		hana: {
-			tag: "hana"
-		}
-	});
-	hanaOptions.hana.pooling = true;
-
-	console.log(`HANA Options: ${JSON.stringify(hanaOptions)}`);
-} catch (error) {
-	console.log(`Error: ${error.toString()}`);
-}
-
+var hanaOptions = xsenv.getServices({
+	hana: {
+		tag: "hana"
+	}
+});
+hanaOptions.hana.pooling = true;
 app.use(
+	xsHDBConn.middleware(hanaOptions.hana),
 	passport.authenticate("JWT", {
 		session: false
-	}),
-	xsHDBConn.middleware(hanaOptions.hana)
+	})
 );
 
 //CDS OData V4 Handler
@@ -110,7 +86,6 @@ cds.serve("gen/csn.json", {
 	.in(app)
 	.catch((err) => {
 		console.log(err);
-		console.log("not able to find cds views");
 		process.exit(1);
 	});
 

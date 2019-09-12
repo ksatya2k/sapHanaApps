@@ -22,6 +22,7 @@ modules:
         properties:
           key: hdi-user-service
           service: '~{user-container-name}'
+    description: DB Module
   - name: srv
     type: nodejs
     path: srv
